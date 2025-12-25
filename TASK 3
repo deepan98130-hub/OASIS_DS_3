@@ -1,0 +1,62 @@
+# Files → Upload → car_price_dataset.xlsx
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder
+from sklearn.metrics import r2_score, mean_absolute_error
+from sklearn.ensemble import RandomForestRegressor
+
+# Using the dummy DataFrame created above
+df = df_dummy.copy()
+
+# Original code continues from here
+df.head()
+df.info()
+df.describe()
+label_encoder = LabelEncoder()
+
+categorical_columns = ["Car_Name", "Brand", "Fuel_Type", "Transmission", "Owner_Type"]
+
+for col in categorical_columns:
+    df[col] = label_encoder.fit_transform(df[col])
+
+df.head()
+X = df.drop("Price_Lakhs", axis=1)
+y = df["Price_Lakhs"]
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42
+)
+model = RandomForestRegressor(
+    n_estimators=200,
+    random_state=42
+)
+
+model.fit(X_train, y_train)
+y_pred = model.predict(X_test)
+print("R2 Score:", r2_score(y_test, y_pred))
+print("Mean Absolute Error:", mean_absolute_error(y_test, y_pred))
+importance = model.feature_importances_
+features = X.columns
+
+plt.figure(figsize=(10,5))
+sns.barplot(x=importance, y=features)
+plt.title("Feature Importance")
+plt.show()
+# Example input (must follow column order)
+new_car = np.array([[
+    10,   # Car_Name (encoded)
+    5,    # Brand (encoded)
+    2021,
+    1497,
+    115,
+    16.5,
+    1,    # Fuel_Type
+    0,    # Transmission
+    0     # Owner_Type
+]])
+
+predicted_price = model.predict(new_car)
+print("Predicted Car Price (Lakhs):", predicted_price[0])
